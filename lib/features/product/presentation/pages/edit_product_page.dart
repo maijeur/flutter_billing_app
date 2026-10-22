@@ -103,12 +103,12 @@ class _EditProductPageState extends State<EditProductPage> {
                     ),
                   ),
 
-                  const InputLabel(text: 'Product Name'),
+                  const InputLabel(text: 'Nom de l’article'),
 
                   TextFormField(
                     initialValue: _name,
                     textCapitalization: TextCapitalization.words,
-                    validator: AppValidators.required('Please enter a name'),
+                    validator: AppValidators.required('Veuillez saisir un nom'),
                     onSaved: (value) => _name = value!,
                   ),
                   const SizedBox(height: 24),
@@ -116,7 +116,7 @@ class _EditProductPageState extends State<EditProductPage> {
                   const InputLabel(text: 'Prix (TND)'),
 
                   TextFormField(
-                    initialValue: _price.toStringAsFixed(2),
+                    initialValue: _price.toStringAsFixed(3),
                     keyboardType:
                         const TextInputType.numberWithOptions(decimal: true),
                     decoration: const InputDecoration(
@@ -127,7 +127,7 @@ class _EditProductPageState extends State<EditProductPage> {
                           color: Colors.black),
                     ),
                     validator: AppValidators.price,
-                    onSaved: (value) => _price = double.parse(value!),
+                    onSaved: (value) => _price = double.parse(value!.replaceAll(',', '.')),
                   ),
                 ],
               ),
