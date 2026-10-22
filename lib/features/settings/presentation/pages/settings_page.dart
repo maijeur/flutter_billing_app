@@ -138,7 +138,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   children: [
                     _buildListItem(
                       icon: Icons.print,
-                      title: 'Print Device',
+                      title: 'Imprimante',
                       subtitleWidget: Row(
                         children: [
                           Text(
