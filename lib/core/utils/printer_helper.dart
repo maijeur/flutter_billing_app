@@ -143,7 +143,7 @@ class PrinterHelper {
 
     // Date and Time
     String formattedDate =
-        DateFormat('dd-MM-yyyy hh:mm a').format(DateTime.now());
+        DateFormat('dd/MM/yyyy HH:mm', 'fr_FR').format(DateTime.now());
     bytes += _textToBytes(formattedDate);
     bytes += EscPos.lineFeed;
 
@@ -152,7 +152,7 @@ class PrinterHelper {
 
     // Header (Align Left)
     bytes += EscPos.alignLeft;
-    bytes += _textToBytes('Item            Price   Total');
+    bytes += _textToBytes('Article         Prix    Total');
     bytes += EscPos.lineFeed;
     bytes += _textToBytes('--------------------------------');
     bytes += EscPos.lineFeed;
@@ -161,8 +161,8 @@ class PrinterHelper {
     for (var item in items) {
       String name = item['name'].toString();
       String qty = item['qty'].toString();
-      String price = item['price'].toString();
-      String totalItem = item['total'].toString();
+      String price = (item['price'] as num).toStringAsFixed(3);
+      String totalItem = (item['total'] as num).toStringAsFixed(3);
 
       String prefix = '${qty}x $name';
       if (prefix.length > 16) prefix = prefix.substring(0, 16);
@@ -178,7 +178,7 @@ class PrinterHelper {
     // Total (Align Right)
     bytes += EscPos.alignRight;
     bytes += EscPos.boldOn;
-    bytes += _textToBytes('TOTAL: $total');
+    bytes += _textToBytes('TOTAL : ${total.toStringAsFixed(3)} TND');
     bytes += EscPos.lineFeed;
     bytes += EscPos.boldOff;
     bytes += EscPos.lineFeed;
