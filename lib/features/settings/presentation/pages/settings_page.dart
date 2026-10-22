@@ -102,6 +102,13 @@ class _SettingsPageState extends State<SettingsPage> {
             _buildListGroup(
               children: [
                 _buildListItem(
+                  icon: Icons.point_of_sale,
+                  title: 'Caisse épicerie',
+                  subtitle: 'Ventes, recettes, stock et crédit client (el kridi)',
+                  onTap: () => context.push('/epicerie'),
+                ),
+                _buildDivider(),
+                _buildListItem(
                   icon: Icons.qr_code_scanner,
                   title: 'Articles',
                   subtitle: 'Gérer les stocks et les codes-barres',
