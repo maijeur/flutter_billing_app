@@ -143,7 +143,7 @@ class PrinterHelper {
 
     // Date and Time
     String formattedDate =
-        DateFormat('dd/MM/yyyy HH:mm', 'fr_FR').format(DateTime.now());
+        DateFormat('dd/MM/yyyy HH:mm').format(DateTime.now());
     bytes += _textToBytes(formattedDate);
     bytes += EscPos.lineFeed;
 
