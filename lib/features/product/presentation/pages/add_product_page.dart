@@ -134,7 +134,7 @@ class _AddProductPageState extends State<AddProductPage> {
                     keyboardType:
                         const TextInputType.numberWithOptions(decimal: true),
                     decoration: const InputDecoration(
-                      hintText: '0.00',
+                      hintText: '0,000',
                       prefixText: 'TND ',
                       prefixStyle: TextStyle(
                           fontSize: 16,
@@ -142,7 +142,7 @@ class _AddProductPageState extends State<AddProductPage> {
                           color: Colors.black),
                     ),
                     validator: AppValidators.price,
-                    onSaved: (value) => _price = double.parse(value!),
+                    onSaved: (value) => _price = double.parse(value!.replaceAll(',', '.')),
                   ),
                 ],
               ),
