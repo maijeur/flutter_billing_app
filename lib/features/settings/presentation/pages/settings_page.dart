@@ -50,7 +50,7 @@ class _SettingsPageState extends State<SettingsPage> {
               child: BlocBuilder<ShopBloc, ShopState>(
                 builder: (context, state) {
                   String shopName = 'Mon commerce';
-                  String initials = 'EG';
+                  String initials = 'EP';
                   if (state is ShopLoaded && state.shop.name.isNotEmpty) {
                     shopName = state.shop.name;
                     final parts = shopName.split(' ');

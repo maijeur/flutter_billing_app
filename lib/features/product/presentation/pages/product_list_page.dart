@@ -88,7 +88,7 @@ class _ProductListPageState extends State<ProductListPage> {
                             ),
                           ),
                           validator:
-                              AppValidators.required('Please enter a barcode'),
+                              AppValidators.required('Veuillez saisir un code-barres ou rechercher un article'),
                         ),
                       ),
                       const SizedBox(width: 12),
