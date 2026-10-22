@@ -119,18 +119,18 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
                       style: TextStyle(fontSize: 12, color: Colors.grey[500]),
                     ),
                     const SizedBox(height: 24),
-                    const InputLabel(text: 'Shop Name'),
+                    const InputLabel(text: 'Nom du commerce'),
                     _buildTextField(
                       controller: _nameController,
                       hint: 'Ex. : Épicerie du Centre',
-                      validator: AppValidators.required('Required'),
+                      validator: AppValidators.required('Ce champ est obligatoire'),
                     ),
                     const SizedBox(height: 15),
                     const InputLabel(text: 'Adresse (ligne 1)'),
                     _buildTextField(
                       controller: _address1Controller,
                       hint: 'Rue et numéro',
-                      validator: AppValidators.required('Required'),
+                      validator: AppValidators.required('Ce champ est obligatoire'),
                     ),
                     const SizedBox(height: 15),
                     const InputLabel(text: 'Adresse complémentaire (facultatif)'),
@@ -139,18 +139,19 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
                       hint: 'Code postal, ville',
                     ),
                     const SizedBox(height: 15),
-                    const InputLabel(text: 'Phone Number'),
+                    const InputLabel(text: 'Téléphone'),
                     _buildTextField(
                       controller: _phoneController,
                       hint: '+216 20 000 000',
                       keyboardType: TextInputType.phone,
-                      validator: AppValidators.required('Required'),
+                      validator: AppValidators.required('Ce champ est obligatoire'),
                     ),
-                    const SizedBox(height: 15),                    Row(
+                    const SizedBox(height: 15),
+                    Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const InputLabel(text: 'Message en bas du ticket'),
-                        Text('Max 150 chars',
+                        Text('Maximum 60 caractères',
                             style: TextStyle(
                                 fontSize: 11, color: Colors.grey[400])),
                       ],
