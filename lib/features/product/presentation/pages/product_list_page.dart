@@ -141,7 +141,7 @@ class _ProductListPageState extends State<ProductListPage> {
 
                 if (state.products.isEmpty) {
                   if (state.status == ProductStatus.error) {
-                    return Center(child: Text('Error: ${state.message}'));
+                    return Center(child: Text('Erreur : ${state.message}'));
                   }
                   return const Center(
                       child: Text('Aucun article. Ajoutez-en un !'));
