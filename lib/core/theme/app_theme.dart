@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  static const Color primaryColor = Color(0xFF6C63FF);
-  static const Color secondaryColor = Color(0xFF03DAC6);
-  static const Color backgroundColor = Color(0xFFF2F2F7);
+  static const Color primaryColor = Color(0xFF176B55);
+  static const Color secondaryColor = Color(0xFFF0A64A);
+  static const Color backgroundColor = Color(0xFFF5F7F4);
   static const Color surfaceColor = Colors.white;
-  static const Color errorColor = Color(0xFFB00020);
+  static const Color errorColor = Color(0xFFB42318);
 
  static final TextTheme textTheme = GoogleFonts.ibmPlexSansTextTheme().copyWith(
   bodyLarge: GoogleFonts.ibmPlexSans(
@@ -49,9 +49,9 @@ class AppTheme {
         iconTheme: const IconThemeData(color: Colors.black),
       ),
       cardTheme: CardThemeData(
-        elevation: 4,
-        shadowColor: Colors.black.withValues(alpha: 0.1),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        elevation: 1,
+        shadowColor: Colors.black.withValues(alpha: 0.06),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         color: surfaceColor,
       ) ,
       inputDecorationTheme: InputDecorationTheme(

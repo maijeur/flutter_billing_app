@@ -75,22 +75,72 @@ class _EpiceriePageState extends State<EpiceriePage> {
 
   Future<void> collect(int index, Map<String, dynamic> credit) async {
     final ctrl = TextEditingController();
-    final amount = await showDialog<double>(context: context, builder: (ctx) => AlertDialog(
-      title: Text('Paiement de ' + credit['customer'].toString()),
-      content: TextField(controller: ctrl, keyboardType: const TextInputType.numberWithOptions(decimal: true),
-        decoration: const InputDecoration(labelText: 'Montant reçu (TND)')),
-      actions: [
-        TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Annuler')),
-        FilledButton(onPressed: () { final value = double.tryParse(ctrl.text.replaceAll(',', '.')); if (value != null && value > 0) Navigator.pop(ctx, value); }, child: const Text('Enregistrer')),
-      ],
-    ));
+    final amount = await showDialog<double>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Paiement de ${credit['customer']}'),
+        content: TextField(
+          controller: ctrl,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          decoration: const InputDecoration(
+            labelText: 'Montant reçu (DT)',
+            hintText: 'Ex. : 10,000',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Annuler'),
+          ),
+          FilledButton(
+            onPressed: () {
+              final value = double.tryParse(ctrl.text.replaceAll(',', '.'));
+              if (value != null && value > 0) Navigator.pop(ctx, value);
+            },
+            child: const Text('Enregistrer'),
+          ),
+        ],
+      ),
+    );
     ctrl.dispose();
     if (amount == null) return;
-    final list = credits, item = Map<String, dynamic>.from(credits[index]), balance = n(credits[index]['balance']);
-    if (amount > balance) { if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Le paiement dépasse le solde.'))); return; }
-    item['paid'] = n(item['paid']) + amount; item['balance'] = balance - amount; list[index] = item;
-    await HiveDatabase.settingsBox.put(creditsKey, list);
-    if (mounted) setState(() {});
+
+    final creditList = credits;
+    final updatedCredit = Map<String, dynamic>.from(creditList[index]);
+    final balance = n(updatedCredit['balance']);
+    if (amount > balance) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Le paiement dépasse le solde restant.')),
+        );
+      }
+      return;
+    }
+
+    updatedCredit['paid'] = n(updatedCredit['paid']) + amount;
+    updatedCredit['balance'] = balance - amount;
+    creditList[index] = updatedCredit;
+    await HiveDatabase.settingsBox.put(creditsKey, creditList);
+
+    // Reflect later credit collections in the daily "Encaissé" total as well.
+    final saleList = sales;
+    final saleIndex = saleList.indexWhere((sale) => sale['id'] == updatedCredit['id']);
+    if (saleIndex >= 0) {
+      final updatedSale = Map<String, dynamic>.from(saleList[saleIndex]);
+      updatedSale['paid'] = n(updatedSale['paid']) + amount;
+      saleList[saleIndex] = updatedSale;
+      await HiveDatabase.settingsBox.put(salesKey, saleList);
+    }
+
+    if (mounted) {
+      setState(() {});
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Paiement du crédit enregistré.'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    }
   }
 
   @override
@@ -148,6 +198,45 @@ class _EpiceriePageState extends State<EpiceriePage> {
     }),
   );
 
-  Widget metric(String title, String value, IconData icon) => Card(child: Padding(padding: const EdgeInsets.all(12), child: Column(crossAxisAlignment: CrossAxisAlignment.start,
-    children: [Icon(icon, color: Theme.of(context).colorScheme.primary), const SizedBox(height: 6), Text(title, style: TextStyle(fontSize: 12, color: Colors.grey[600])), Text(value, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold))])));
+  Widget metric(String title, String value, IconData icon) {
+    final accent = title == 'Stock bas'
+        ? const Color(0xFFD97706)
+        : Theme.of(context).colorScheme.primary;
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: accent.withValues(alpha: 0.10),
+                borderRadius: BorderRadius.circular(11),
+              ),
+              alignment: Alignment.center,
+              child: Icon(icon, color: accent, size: 20),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey[600],
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              value,
+              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
