@@ -115,7 +115,7 @@ class _ShopDetailsPageState extends State<ShopDetailsPage> {
                       height: 5,
                     ),
                     Text(
-                      'Ces informations apparaîtront sur vos tickets de caisse.',
+                      'Configurez les coordonnées de votre commerce en Tunisie. Ces informations apparaîtront sur vos tickets de caisse (montants en DT / TND).',
                       style: TextStyle(fontSize: 12, color: Colors.grey[500]),
                     ),
                     const SizedBox(height: 24),
