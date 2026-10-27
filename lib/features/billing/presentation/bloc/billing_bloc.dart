@@ -5,12 +5,14 @@ import 'package:billing_app/features/product/domain/entities/product.dart';
 import 'package:billing_app/features/product/domain/usecases/product_usecases.dart';
 import '../../../../core/utils/printer_helper.dart';
 import '../../../../core/data/hive_database.dart';
+import '../../../product/data/models/product_model.dart';
 
 part 'billing_event.dart';
 part 'billing_state.dart';
 
 class BillingBloc extends Bloc<BillingEvent, BillingState> {
   final GetProductByBarcodeUseCase getProductByBarcodeUseCase;
+  String? _lastRecordedCartSignature;
 
   BillingBloc({required this.getProductByBarcodeUseCase})
       : super(const BillingState()) {
@@ -79,7 +81,68 @@ class BillingBloc extends Bloc<BillingEvent, BillingState> {
   }
 
   void _onClearCart(ClearCartEvent event, Emitter<BillingState> emit) {
+    _lastRecordedCartSignature = null;
     emit(const BillingState());
+  }
+
+  Future<void> _recordScannerSale(List<CartItem> cart) async {
+    final signature = cart
+        .map((item) => '${item.product.id}:${item.quantity}')
+        .join('|');
+    if (signature == _lastRecordedCartSignature) return;
+    if (cart.isEmpty) throw StateError('Le panier est vide.');
+
+    // Validate every item before changing any stock.
+    final storedProducts = <String, ProductModel>{};
+    for (final item in cart) {
+      final stored = HiveDatabase.productBox.get(item.product.id);
+      if (stored is! ProductModel) {
+        throw StateError('Article introuvable : ${item.product.name}.');
+      }
+      if (stored.stock < item.quantity) {
+        throw StateError(
+          'Stock insuffisant pour ${stored.name} : ${stored.stock} disponible(s).',
+        );
+      }
+      storedProducts[item.product.id] = stored;
+    }
+
+    final date = DateTime.now().toIso8601String();
+    final transactionId = DateTime.now().microsecondsSinceEpoch.toString();
+    final rawSales = HiveDatabase.settingsBox.get('epicerie_sales_v1');
+    final sales = rawSales is List
+        ? rawSales
+            .whereType<Map>()
+            .map((sale) => Map<String, dynamic>.from(sale))
+            .toList()
+        : <Map<String, dynamic>>[];
+
+    for (final item in cart) {
+      final product = storedProducts[item.product.id]!;
+      await HiveDatabase.productBox.put(
+        product.id,
+        ProductModel(
+          id: product.id,
+          name: product.name,
+          barcode: product.barcode,
+          price: product.price,
+          stock: product.stock - item.quantity,
+        ),
+      );
+      sales.add({
+        'id': '$transactionId-${product.id}',
+        'productId': product.id,
+        'productName': product.name,
+        'quantity': item.quantity,
+        'total': item.total,
+        'paid': item.total,
+        'paymentType': 'Espèces',
+        'customer': '',
+        'date': date,
+      });
+    }
+    await HiveDatabase.settingsBox.put('epicerie_sales_v1', sales);
+    _lastRecordedCartSignature = signature;
   }
 
   Future<void> _onPrintReceipt(
@@ -105,6 +168,30 @@ class BillingBloc extends Bloc<BillingEvent, BillingState> {
       }
     }
 
+    if (state.cartItems.isEmpty) {
+      emit(state.copyWith(error: 'Le panier est vide.', clearError: false));
+      emit(state.copyWith(clearError: true));
+      return;
+    }
+    try {
+      for (final item in state.cartItems) {
+        final stored = HiveDatabase.productBox.get(item.product.id);
+        if (stored is! ProductModel || stored.stock < item.quantity) {
+          final available = stored is ProductModel ? stored.stock : 0;
+          emit(state.copyWith(
+            error: 'Stock insuffisant pour ${item.product.name} : $available disponible(s).',
+            clearError: false,
+          ));
+          emit(state.copyWith(clearError: true));
+          return;
+        }
+      }
+    } catch (e) {
+      emit(state.copyWith(error: 'Vérification du stock impossible : $e', clearError: false));
+      emit(state.copyWith(clearError: true));
+      return;
+    }
+
     emit(state.copyWith(
         isPrinting: true, printSuccess: false, clearError: true));
 
@@ -127,6 +214,7 @@ class BillingBloc extends Bloc<BillingEvent, BillingState> {
           total: state.totalAmount,
           footer: event.footer);
 
+      await _recordScannerSale(List<CartItem>.from(state.cartItems));
       emit(state.copyWith(isPrinting: false, printSuccess: true));
     } catch (e) {
       emit(state.copyWith(
