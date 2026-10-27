@@ -75,22 +75,72 @@ class _EpiceriePageState extends State<EpiceriePage> {
 
   Future<void> collect(int index, Map<String, dynamic> credit) async {
     final ctrl = TextEditingController();
-    final amount = await showDialog<double>(context: context, builder: (ctx) => AlertDialog(
-      title: Text('Paiement de ' + credit['customer'].toString()),
-      content: TextField(controller: ctrl, keyboardType: const TextInputType.numberWithOptions(decimal: true),
-        decoration: const InputDecoration(labelText: 'Montant reçu (TND)')),
-      actions: [
-        TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Annuler')),
-        FilledButton(onPressed: () { final value = double.tryParse(ctrl.text.replaceAll(',', '.')); if (value != null && value > 0) Navigator.pop(ctx, value); }, child: const Text('Enregistrer')),
-      ],
-    ));
+    final amount = await showDialog<double>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Paiement de ${credit['customer']}'),
+        content: TextField(
+          controller: ctrl,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          decoration: const InputDecoration(
+            labelText: 'Montant reçu (DT)',
+            hintText: 'Ex. : 10,000',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Annuler'),
+          ),
+          FilledButton(
+            onPressed: () {
+              final value = double.tryParse(ctrl.text.replaceAll(',', '.'));
+              if (value != null && value > 0) Navigator.pop(ctx, value);
+            },
+            child: const Text('Enregistrer'),
+          ),
+        ],
+      ),
+    );
     ctrl.dispose();
     if (amount == null) return;
-    final list = credits, item = Map<String, dynamic>.from(credits[index]), balance = n(credits[index]['balance']);
-    if (amount > balance) { if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Le paiement dépasse le solde.'))); return; }
-    item['paid'] = n(item['paid']) + amount; item['balance'] = balance - amount; list[index] = item;
-    await HiveDatabase.settingsBox.put(creditsKey, list);
-    if (mounted) setState(() {});
+
+    final creditList = credits;
+    final updatedCredit = Map<String, dynamic>.from(creditList[index]);
+    final balance = n(updatedCredit['balance']);
+    if (amount > balance) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Le paiement dépasse le solde restant.')),
+        );
+      }
+      return;
+    }
+
+    updatedCredit['paid'] = n(updatedCredit['paid']) + amount;
+    updatedCredit['balance'] = balance - amount;
+    creditList[index] = updatedCredit;
+    await HiveDatabase.settingsBox.put(creditsKey, creditList);
+
+    // Reflect later credit collections in the daily "Encaissé" total as well.
+    final saleList = sales;
+    final saleIndex = saleList.indexWhere((sale) => sale['id'] == updatedCredit['id']);
+    if (saleIndex >= 0) {
+      final updatedSale = Map<String, dynamic>.from(saleList[saleIndex]);
+      updatedSale['paid'] = n(updatedSale['paid']) + amount;
+      saleList[saleIndex] = updatedSale;
+      await HiveDatabase.settingsBox.put(salesKey, saleList);
+    }
+
+    if (mounted) {
+      setState(() {});
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Paiement du crédit enregistré.'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    }
   }
 
   @override
