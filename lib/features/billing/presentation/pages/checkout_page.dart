@@ -49,6 +49,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                     content: Text('Vente enregistrée, stock mis à jour et ticket imprimé.'),
                     backgroundColor: Colors.green));
+                context.read<BillingBloc>().add(ClearCartEvent());
+                context.go('/');
               }
             },
             builder: (context, billingState) {
