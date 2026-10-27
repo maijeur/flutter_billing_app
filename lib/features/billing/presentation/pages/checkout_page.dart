@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../shop/presentation/bloc/shop_bloc.dart';
+import '../../../product/presentation/bloc/product_bloc.dart';
 import '../bloc/billing_bloc.dart';
 
 class CheckoutPage extends StatefulWidget {
@@ -44,11 +45,12 @@ class _CheckoutPageState extends State<CheckoutPage> {
           body: BlocConsumer<BillingBloc, BillingState>(
             listener: (context, state) {
               if (state.printSuccess) {
+                context.read<ProductBloc>().add(LoadProducts());
                 ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                    content: Text('Ticket imprimé avec succès'),
+                    content: Text('Vente enregistrée, stock mis à jour et ticket imprimé.'),
                     backgroundColor: Colors.green));
-                // context.read<BillingBloc>().add(ClearCartEvent());
-                // context.go('/');
+                context.read<BillingBloc>().add(ClearCartEvent());
+                context.go('/');
               }
             },
             builder: (context, billingState) {
