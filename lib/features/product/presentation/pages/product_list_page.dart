@@ -199,12 +199,39 @@ class _ProductListPageState extends State<ProductListPage> {
                                       fontWeight: FontWeight.w500,
                                       color: Colors.grey[600]),
                                 ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Stock disponible : ${product.stock}',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: product.stock <= 5
+                                        ? Colors.orange[800]
+                                        : Colors.green[700],
+                                  ),
+                                ),
                               ],
                             ),
                           ),
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.green.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: IconButton(
+                                  tooltip: 'Réapprovisionner le stock',
+                                  icon: const Icon(Icons.add_box_outlined,
+                                      color: Colors.green, size: 20),
+                                  constraints: const BoxConstraints(),
+                                  padding: const EdgeInsets.all(8),
+                                  onPressed: () =>
+                                      _restockProduct(context, product),
+                                ),
+                              ),
+                              const SizedBox(width: 6),
                               Container(
                                 decoration: BoxDecoration(
                                   color: AppTheme.primaryColor
@@ -255,6 +282,82 @@ class _ProductListPageState extends State<ProductListPage> {
         foregroundColor: Colors.white,
         shape: const CircleBorder(),
         child: const Icon(Icons.add, size: 32),
+      ),
+    );
+  }
+
+  Future<void> _restockProduct(BuildContext context, Product product) async {
+    final quantityController = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+
+    final quantity = await showDialog<int>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Réapprovisionner le stock'),
+        content: Form(
+          key: formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(product.name,
+                  style: const TextStyle(fontWeight: FontWeight.w600)),
+              const SizedBox(height: 8),
+              Text('Stock actuel : ${product.stock}'),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: quantityController,
+                autofocus: true,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  labelText: 'Quantité reçue',
+                  hintText: 'Ex. : 10',
+                  prefixIcon: Icon(Icons.inventory_2_outlined),
+                ),
+                validator: (value) {
+                  final parsed = int.tryParse((value ?? '').trim());
+                  if (parsed == null || parsed <= 0) {
+                    return 'Saisissez une quantité entière supérieure à 0';
+                  }
+                  return null;
+                },
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Annuler'),
+          ),
+          FilledButton.icon(
+            onPressed: () {
+              if (formKey.currentState!.validate()) {
+                Navigator.pop(
+                  dialogContext,
+                  int.parse(quantityController.text.trim()),
+                );
+              }
+            },
+            icon: const Icon(Icons.add),
+            label: const Text('Ajouter au stock'),
+          ),
+        ],
+      ),
+    );
+
+    quantityController.dispose();
+    if (quantity == null || !context.mounted) return;
+
+    context.read<ProductBloc>().add(
+      UpdateProduct(
+        Product(
+          id: product.id,
+          name: product.name,
+          barcode: product.barcode,
+          price: product.price,
+          stock: product.stock + quantity,
+        ),
       ),
     );
   }
