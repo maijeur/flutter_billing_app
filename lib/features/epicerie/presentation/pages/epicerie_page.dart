@@ -198,6 +198,45 @@ class _EpiceriePageState extends State<EpiceriePage> {
     }),
   );
 
-  Widget metric(String title, String value, IconData icon) => Card(child: Padding(padding: const EdgeInsets.all(12), child: Column(crossAxisAlignment: CrossAxisAlignment.start,
-    children: [Icon(icon, color: Theme.of(context).colorScheme.primary), const SizedBox(height: 6), Text(title, style: TextStyle(fontSize: 12, color: Colors.grey[600])), Text(value, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold))])));
+  Widget metric(String title, String value, IconData icon) {
+    final accent = title == 'Stock bas'
+        ? const Color(0xFFD97706)
+        : Theme.of(context).colorScheme.primary;
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: accent.withValues(alpha: 0.10),
+                borderRadius: BorderRadius.circular(11),
+              ),
+              alignment: Alignment.center,
+              child: Icon(icon, color: accent, size: 20),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey[600],
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              value,
+              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
