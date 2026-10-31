@@ -1,0 +1,8 @@
+{
+  "name": "Épicerie Tunisie — Caisse et gestion de stock",
+  "description": "Application de caisse enregistreuse, gestion de stock, carnet de crédit (el kridi) et impression de tickets pour épiceries et commerces en Tunisie.",
+  "permissions": [],
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

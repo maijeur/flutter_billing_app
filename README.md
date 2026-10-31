@@ -1,40 +1,35 @@
-# Épicerie Tunisie — Caisse et gestion de stock
+# Facturation Tunisie — Caisse et gestion de stock (React)
 
-Application Android hors ligne destinée aux petites épiceries et commerces de proximité en Tunisie.
+Application web de caisse enregistreuse et gestion de point de vente (POS) pour commerces et épiceries en Tunisie, réécrite en React avec TypeScript et Tailwind CSS.
 
-## Fonctions disponibles
+## Fonctionnalités
 
-- Caisse avec lecture de codes-barres et panier.
-- Catalogue des articles, prix et gestion du stock.
-- Prix affichés en dinars tunisiens (TND), avec trois décimales.
-- Impression de tickets sur imprimante thermique Bluetooth compatible.
-- Écran « Caisse épicerie » pour enregistrer des ventes, suivre les recettes du jour, repérer le stock faible et gérer le crédit client (« el kridi »).
-- Données enregistrées localement sur l'appareil ; l'application de base peut fonctionner sans connexion Internet.
+- **Caisse & Scanner de codes-barres** : Viseur caméra en direct (Webcam / BarcodeDetector API) avec reticules d'alignement, contrôle du flash, boutons de test direct et panier interactif en temps réel.
+- **Validation du panier & Impression de tickets** : Calcul automatique des totaux en Dinars Tunisiens (TND avec 3 décimales), validation des stocks avant enregistrement, et aperçu/impression de ticket thermique format 58mm/80mm (ESC/POS).
+- **Gestion épicerie & Statistiques journalières** :
+  - Métriques du jour : Total des ventes, Montant encaissé, Crédits en cours et Articles à stock bas (≤ 5).
+  - Vente directe : Choix du produit, quantité vendue, mode de paiement (« Espèces » ou « À crédit — el kridi ») avec déduction immédiate des stocks.
+  - Gestion du crédit client (« el kridi ») : Suivi des dettes clients avec enregistrement des encaissements partiels ou totaux.
+  - Historique des dernières transactions.
+- **Catalogue des articles & Stocks** :
+  - Recherche instantanée par nom ou code-barres.
+  - Réapprovisionnement rapide du stock (dialogue d'ajout de quantité).
+  - Ajout, modification et suppression d'articles avec validation d'unicité des codes-barres.
+- **Informations du commerce** : Nom, adresse ligne 1 & 2, numéro de téléphone (+216...) et texte de bas de ticket personnalisable.
+- **Paramètres & Matériel** : Statut de l'imprimante thermique, synchronisation Bluetooth et raccourcis de gestion.
+- **Stockage local** : Persistance automatique dans le navigateur (remplaçant les boîtes Hive de Flutter).
 
-## Point important sur les ventes
-
-L'écran « Caisse épicerie » et le panier de caisse d'origine sont encore deux parcours distincts. Les ventes du panier d'origine ne sont pas encore automatiquement reprises dans les statistiques de l'écran « Caisse épicerie ». Vérifiez les résultats avec des données de test avant de vous en servir en situation réelle.
-
-## Technologies
-
-- Flutter / Dart
-- flutter_bloc pour l'état de l'application
-- Hive pour le stockage local
-- mobile_scanner pour la lecture des codes-barres
-- Impression thermique Bluetooth
-
-## Compiler l'application
-
-Prérequis : Flutter SDK et Android SDK installés.
+## Démarrage rapide
 
 ```bash
-flutter pub get
-dart run build_runner build --delete-conflicting-outputs
-flutter build apk --release
+npm install
+npm run dev
 ```
 
-L'APK est généré dans build/app/outputs/flutter-apk/app-release.apk.
+Le serveur de développement démarre sur le port 3000 (`http://localhost:3000`).
 
-## Personnalisation du commerce
+## Construction pour production
 
-Ouvrez « Paramètres » puis « Informations du commerce » pour saisir le nom, l'adresse, le téléphone et le texte de bas de ticket de votre épicerie.
+```bash
+npm run build
+```
