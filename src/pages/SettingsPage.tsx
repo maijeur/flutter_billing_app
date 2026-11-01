@@ -31,11 +31,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ onNavigate }) => {
     : 'EP';
 
   const handleRefreshPrinter = () => {
-    setIsRefreshing(true);
-    setTimeout(() => {
-      setIsRefreshing(false);
-      showToast('Recherche de périphériques Bluetooth effectuée', 'info');
-    }, 700);
+    showToast('La recherche Bluetooth réelle sera disponible après intégration du module d’impression.', 'info');
   };
 
   return (
@@ -141,7 +137,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ onNavigate }) => {
                   <h3 className="font-bold text-sm text-slate-900">Imprimante</h3>
                   <div className="flex items-center gap-2 mt-0.5">
                     <span className="text-xs text-slate-500 truncate">
-                      {printer.connected ? printer.name : 'Aucune imprimante connectée'}
+                      {printer.connected ? printer.name : 'Impression Bluetooth non configurée'}
                     </span>
                     {printer.connected && (
                       <span className="text-[9px] font-black tracking-wide px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 shrink-0">
@@ -177,7 +173,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ onNavigate }) => {
             </div>
           </div>
           <p className="text-[11px] italic text-slate-400 px-2 leading-relaxed">
-            Pour connecter une imprimante, ouvrez les paramètres Bluetooth du téléphone ou du PC, associez-la, puis revenez et appuyez sur Actualiser.
+            La connexion à une imprimante thermique n’est pas encore disponible dans cette version. Le ticket peut être consulté à l’écran.
           </p>
         </div>
       </div>
