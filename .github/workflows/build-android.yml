@@ -32,7 +32,7 @@ jobs:
         run: npm install
 
       - name: Install Capacitor 7
-        run: npm install --no-save @capacitor/core@7 @capacitor/cli@7 @capacitor/android@7
+        run: npm install --no-save @capacitor/core@7 @capacitor/cli@7 @capacitor/android@7 @capacitor-mlkit/barcode-scanning@7.2.1
 
       - name: Build web app
         run: npm run build
@@ -47,6 +47,18 @@ jobs:
           }
           EOF
           npx cap add android
+          python3 - <<'PY'
+          from pathlib import Path
+          manifest = Path('android/app/src/main/AndroidManifest.xml')
+          xml = manifest.read_text()
+          permission = '    <uses-permission android:name="android.permission.CAMERA" />\\n'
+          if 'android.permission.CAMERA' not in xml:
+              xml = xml.replace('<application', permission + '    <application', 1)
+          metadata = '        <meta-data android:name="com.google.mlkit.vision.DEPENDENCIES" android:value="barcode_ui" />\\n'
+          if 'com.google.mlkit.vision.DEPENDENCIES' not in xml:
+              xml = xml.replace('<application', '<application\\n' + metadata.rstrip(), 1)
+          manifest.write_text(xml)
+          PY
           npx cap sync android
 
       - name: Build debug APK
