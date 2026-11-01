@@ -53,7 +53,6 @@ export const CameraScanner: React.FC<CameraScannerProps> = ({
       }
       const { barcodes } = await BarcodeScanner.scan({
         formats: [BarcodeFormat.Ean13, BarcodeFormat.Ean8, BarcodeFormat.UpcA, BarcodeFormat.UpcE, BarcodeFormat.Code128, BarcodeFormat.Code39],
-        autoZoom: true,
       });
       const value = barcodes[0]?.rawValue || barcodes[0]?.displayValue;
       if (value) handleDetectedBarcode(value);
