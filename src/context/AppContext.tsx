@@ -142,48 +142,35 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const cleanBarcode = barcode.trim();
     if (!cleanBarcode) return { success: false, message: 'Code-barres vide' };
 
-    const currentProducts = storageService.getProducts();
-    const product = currentProducts.find((p) => p.barcode === cleanBarcode);
-
+    const product = storageService.getProducts().find((p) => p.barcode === cleanBarcode);
     if (!product) {
-      const msg = `Article introuvable : ${cleanBarcode}`;
-      showToast(msg, 'error');
-      return { success: false, message: msg };
+      const message = `Article introuvable : ${cleanBarcode}`;
+      showToast(message, 'error');
+      return { success: false, message };
     }
 
-    // Attempt to add to cart
-    let added = false;
-    setCartItems((prev) => {
-      const existingIndex = prev.findIndex((i) => i.product.id === product.id);
-      if (existingIndex >= 0) {
-        const item = prev[existingIndex];
-        if (item.quantity + 1 > product.stock) {
-          showToast(`Stock insuffisant pour ${product.name} (${product.stock} dispo)`, 'error');
-          return prev;
-        }
-        added = true;
-        const updated = [...prev];
-        updated[existingIndex] = { ...item, quantity: item.quantity + 1 };
-        return updated;
-      } else {
-        if (product.stock < 1) {
-          showToast(`Rupture de stock pour ${product.name}`, 'error');
-          return prev;
-        }
-        added = true;
-        return [...prev, { product, quantity: 1 }];
-      }
+    // Calculate from the current cart before scheduling React state updates.
+    const existing = cartItems.find((item) => item.product.id === product.id);
+    const nextQuantity = (existing?.quantity || 0) + 1;
+    if (product.stock < nextQuantity) {
+      const message = `Stock insuffisant pour ${product.name} (${product.stock} disponible(s))`;
+      showToast(message, 'error');
+      return { success: false, message };
+    }
+
+    setCartItems((previous) => {
+      const index = previous.findIndex((item) => item.product.id === product.id);
+      if (index < 0) return [...previous, { product, quantity: 1 }];
+      return previous.map((item, itemIndex) => itemIndex === index
+        ? { ...item, quantity: item.quantity + 1 }
+        : item);
     });
-
-    if (added) {
-      showToast(`+1 ${product.name}`, 'success');
-      // trigger small vibration if supported on device
-      if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
-        try { navigator.vibrate(60); } catch {}
-      }
+    showToast(`+1 ${product.name}`, 'success');
+    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+      try { navigator.vibrate(60); } catch {}
     }
-    return { success: added };
-  }, [showToast]);
+    return { success: true };
+  }, [cartItems, showToast]);
 
   // Products
   const addProduct = useCallback((productData: Omit<Product, 'id'>) => {
@@ -288,7 +275,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setSales(salesList);
     clearCart();
 
-    showToast('Vente enregistrée, stock mis à jour et ticket imprimé.', 'success');
+    showToast('Vente enregistrée et stock mis à jour. Le ticket est disponible en aperçu.', 'success');
     return { success: true };
   }, [cartItems, clearCart, showToast]);
 
@@ -424,15 +411,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   // Printer toggle
   const togglePrinterConnection = useCallback(() => {
-    setPrinter((prev) => {
-      const nextState = !prev.connected;
-      storageService.savePrinterSettings(nextState);
-      showToast(
-        nextState ? 'Imprimante connectée' : 'Imprimante déconnectée',
-        nextState ? 'success' : 'info'
-      );
-      return { ...prev, connected: nextState };
-    });
+    showToast('La connexion Bluetooth et l’impression thermique ne sont pas encore intégrées.', 'info');
   }, [showToast]);
 
   return (
