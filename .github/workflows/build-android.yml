@@ -51,12 +51,12 @@ jobs:
           from pathlib import Path
           manifest = Path('android/app/src/main/AndroidManifest.xml')
           xml = manifest.read_text()
-          permission = '    <uses-permission android:name="android.permission.CAMERA" />\\n'
+          permission = '    <uses-permission android:name="android.permission.CAMERA" />\n'
           if 'android.permission.CAMERA' not in xml:
               xml = xml.replace('<application', permission + '    <application', 1)
-          metadata = '        <meta-data android:name="com.google.mlkit.vision.DEPENDENCIES" android:value="barcode_ui" />\\n'
+          metadata = '        <meta-data android:name="com.google.mlkit.vision.DEPENDENCIES" android:value="barcode_ui" />\n'
           if 'com.google.mlkit.vision.DEPENDENCIES' not in xml:
-              xml = xml.replace('<application', '<application\\n' + metadata.rstrip(), 1)
+              xml = xml.replace('<application', '<application\n' + metadata.rstrip(), 1)
           manifest.write_text(xml)
           PY
           npx cap sync android
