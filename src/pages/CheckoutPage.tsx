@@ -8,15 +8,14 @@ interface CheckoutPageProps {
 }
 
 export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onNavigate }) => {
-  const { cartItems, totalCartAmount, shop, completeCheckout, clearCart } = useApp();
+  const { cartItems, totalCartAmount, shop, completeCheckout } = useApp();
   const [isReceiptOpen, setIsReceiptOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [snapshotItems, setSnapshotItems] = useState(cartItems);
   const [snapshotTotal, setSnapshotTotal] = useState(totalCartAmount);
 
   const handleBack = () => {
-    // Matches Flutter PopScope behavior
-    clearCart();
+    // Returning to the cash register must preserve the current basket.
     onNavigate('/');
   };
 
@@ -134,7 +133,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onNavigate }) => {
               className="w-full py-3.5 px-4 rounded-xl bg-[#176B55] hover:bg-[#135947] text-white font-bold text-sm shadow-lg shadow-[#176B55]/20 flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-70"
             >
               <Printer className="w-5 h-5" />
-              <span>{isProcessing ? 'Impression en cours...' : 'Imprimer le ticket'}</span>
+              <span>{isProcessing ? 'Enregistrement en cours...' : 'Valider la vente'}</span>
             </button>
           </div>
         </div>
