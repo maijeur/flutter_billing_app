@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Camera, CameraOff, Flashlight, FlashlightOff, Settings as SettingsIcon, Barcode as BarcodeIcon, Keyboard, Zap } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { Capacitor } from '@capacitor/core';
+import { BarcodeScanner, BarcodeFormat } from '@capacitor-mlkit/barcode-scanning';
 
 interface CameraScannerProps {
   onScan: (barcode: string) => void;
@@ -38,8 +40,31 @@ export const CameraScanner: React.FC<CameraScannerProps> = ({
     [onScan]
   );
 
-  // Setup video stream
+  const startNativeScan = async () => {
+    setCameraError(null);
+    try {
+      const { supported } = await BarcodeScanner.isSupported();
+      if (!supported) throw new Error('Aucune caméra compatible détectée sur cet appareil.');
+      const { available } = await BarcodeScanner.isGoogleBarcodeScannerModuleAvailable();
+      if (!available) {
+        await BarcodeScanner.installGoogleBarcodeScannerModule();
+        setCameraError('Installation du module de lecture Google en cours. Vérifiez votre connexion Internet, puis appuyez à nouveau sur Scanner.');
+        return;
+      }
+      const { barcodes } = await BarcodeScanner.scan({
+        formats: [BarcodeFormat.Ean13, BarcodeFormat.Ean8, BarcodeFormat.UpcA, BarcodeFormat.UpcE, BarcodeFormat.Code128, BarcodeFormat.Code39],
+        autoZoom: true,
+      });
+      const value = barcodes[0]?.rawValue || barcodes[0]?.displayValue;
+      if (value) handleDetectedBarcode(value);
+    } catch (error: any) {
+      setCameraError(error?.message || 'Impossible de démarrer le lecteur. Vérifiez les autorisations de la caméra.');
+    }
+  };
+
+  // Setup video stream for browser only. Android uses the native ML Kit scanner below.
   useEffect(() => {
+    if (Capacitor.isNativePlatform()) return;
     let active = true;
 
     async function startCamera() {
@@ -91,7 +116,7 @@ export const CameraScanner: React.FC<CameraScannerProps> = ({
 
   // Barcode Detection via BarcodeDetector API if available in browser
   useEffect(() => {
-    if (!isCameraOn || cameraError) return;
+    if (Capacitor.isNativePlatform() || !isCameraOn || cameraError) return;
 
     let scanInterval: any = null;
     let detector: any = null;
@@ -151,6 +176,25 @@ export const CameraScanner: React.FC<CameraScannerProps> = ({
     handleDetectedBarcode(manualCode.trim());
     setManualCode('');
   };
+
+  if (Capacitor.isNativePlatform()) {
+    return (
+      <div className={`relative flex flex-col items-center justify-center gap-3 bg-slate-950 text-white w-full p-5 ${heightClass}`}>
+        <BarcodeIcon className="w-12 h-12 text-emerald-400" />
+        <h3 className="font-bold text-base">Lecteur de codes-barres</h3>
+        <p className="text-xs text-center text-slate-300">Utilisez la caméra arrière pour lire les codes EAN des produits.</p>
+        <button type="button" onClick={startNativeScan} className="px-6 py-3 rounded-xl bg-emerald-600 text-white font-bold text-sm active:scale-95">
+          <Camera className="inline w-4 h-4 mr-2" />Scanner un code-barres
+        </button>
+        {cameraError && <p className="text-xs text-amber-200 text-center max-w-sm">{cameraError}</p>}
+        <button type="button" onClick={() => setShowManualInput(v => !v)} className="text-xs text-slate-200 underline">Saisir le code manuellement</button>
+        {showManualInput && <form onSubmit={handleManualSubmit} className="flex gap-2 w-full max-w-sm">
+          <input value={manualCode} onChange={e => setManualCode(e.target.value)} placeholder="Code-barres / EAN" className="min-w-0 flex-1 rounded-lg px-3 py-2 text-sm text-slate-900" />
+          <button type="submit" className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-bold">Ajouter</button>
+        </form>}
+      </div>
+    );
+  }
 
   return (
     <div className={`relative bg-slate-950 w-full overflow-hidden ${heightClass}`}>
