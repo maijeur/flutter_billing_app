@@ -275,12 +275,12 @@ export const storageService = {
   // Printer settings
   getPrinterSettings(): { connected: boolean; mac: string; name: string } {
     try {
-      const mac = localStorage.getItem(STORAGE_KEYS.PRINTER_MAC) || '00:11:22:33:44:55';
-      const name = localStorage.getItem(STORAGE_KEYS.PRINTER_NAME) || 'Imprimante Thermique POS-58';
-      const connected = localStorage.getItem('printer_connected') !== 'false';
+      const mac = localStorage.getItem(STORAGE_KEYS.PRINTER_MAC) || '';
+      const name = localStorage.getItem(STORAGE_KEYS.PRINTER_NAME) || '';
+      const connected = localStorage.getItem('printer_connected') === 'true';
       return { connected, mac, name };
     } catch {
-      return { connected: true, mac: '00:11:22:33:44:55', name: 'Imprimante Thermique POS-58' };
+      return { connected: false, mac: '', name: '' };
     }
   },
 
